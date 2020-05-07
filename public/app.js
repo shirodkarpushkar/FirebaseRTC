@@ -148,6 +148,15 @@ async function joinRoomById(roomId) {
     });
 
     // Code for collecting ICE candidates below
+    const calleeCandidatesCollection = roomRef.collection("calleeCandidates");
+    peerConnection.addEventListener("icecandidate", (event) => {
+      if (!event.candidate) {
+        console.log("Got final candidate!");
+        return;
+      }
+      console.log("Got candidate: ", event.candidate);
+      calleeCandidatesCollection.add(event.candidate.toJSON());
+    });
 
     // Code for collecting ICE candidates above
 
