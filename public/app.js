@@ -23,7 +23,30 @@ function init() {
   document.querySelector("#joinBtn").addEventListener("click", joinRoom);
   roomDialog = new mdc.dialog.MDCDialog(document.querySelector("#room-dialog"));
 }
+async function collectIceCandidates(
+  roomRef,
+  peerConneciton,
+  localName,
+  remoteName
+) {
+  const candidatesCollection = roomRef.collection(localName);
 
+  peerConnection.addEventListener("icecandidate", (event) => {
+    if (event.candidate) {
+      const json = event.candidate.toJSON();
+      candidatesCollection.add(json);
+    }
+  });
+
+  roomRef.collection(remoteName).onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const candidate = new RTCIceCandidate(change.doc.data());
+        peerConneciton.addIceCandidate(candidate);
+      }
+    });
+  });
+}
 async function createRoom() {
   document.querySelector("#createBtn").disabled = true;
   document.querySelector("#joinBtn").disabled = true;
